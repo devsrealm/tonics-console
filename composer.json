@@ -1,0 +1,20 @@
+{
+    "name": "devsrealm/tonics-console",
+    "description": "Tonics Console is a PHP-based command-line argument processing library. It allows you to easily parse and handle command-line arguments in your PHP applications.\n\n",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "DevsrealmGuy",
+            "email": "faruq@devsrealm.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"Devsrealm\\TonicsConsole\\": "src/"}
+    },
+    "require": {
+        "php": ">=8.0",
+        "ext-intl": "*",
+        "ext-fileinfo": "*"
+    }
+}
