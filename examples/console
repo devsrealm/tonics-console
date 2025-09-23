@@ -1,0 +1,32 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Devsrealm\TonicsConsole\CommandRegistrar;
+use Devsrealm\TonicsConsole\Console;
+use Devsrealm\TonicsConsole\ProcessCommandLineArgs;
+use Devsrealm\TonicsConsole\Commands\Examples\EnvManageCommand;
+use Devsrealm\TonicsConsole\Commands\Examples\HelpCommands;
+
+try {
+    $args = new ProcessCommandLineArgs($argv);
+    if (!$args->passes()) {
+        fwrite(STDERR, "No valid arguments. Try --help for help.\n");
+        exit(1);
+    }
+
+    // Create registrar and register example commands
+    $registrar = new CommandRegistrar([]);
+    $envCmd = new EnvManageCommand();
+    $describeCmd = new HelpCommands($registrar);
+    $registrar->setList([$envCmd, $describeCmd]);
+
+    $console = new Console($registrar, $args->getProcessArgs(), null);
+    $console->bootConsole();
+    exit(0);
+} catch (Throwable $e) {
+    fwrite(STDERR, 'Error: ' . $e->getMessage() . "\n");
+    exit(1);
+}
+

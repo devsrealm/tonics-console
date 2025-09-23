@@ -29,17 +29,29 @@ class ProcessCommandLineArgs
         });
 
         #
-        # Second Phase, is to separate the key from the value,
-        # we then return the result.
+        # Second Phase, is to separate the key from the value (using the first '=' only),
+        # support repeated keys by packing values into arrays, then return the result.
+        # This is backward-compatible: a single occurrence remains a string, multiple become an array.
         #
         if (!empty($args)) {
             $options = [];
             foreach ($args as $opt) {
                 if (str_contains($opt, '=')) {
-                    $split = explode('=', $opt);
-                    $options[$split[0]] = $split[1];
+                    // Split into key and value but keep additional '=' in the value part
+                    [$key, $value] = explode('=', $opt, 2);
                 } else {
-                    $options[$opt] = '';
+                    $key = $opt;
+                    $value = '';
+                }
+
+                if (array_key_exists($key, $options)) {
+                    // Promote existing scalar to array and append new value
+                    if (!is_array($options[$key])) {
+                        $options[$key] = [$options[$key]];
+                    }
+                    $options[$key][] = $value;
+                } else {
+                    $options[$key] = $value;
                 }
             }
             return $options;

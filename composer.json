@@ -16,5 +16,9 @@
         "php": ">=8.0",
         "ext-intl": "*",
         "ext-fileinfo": "*"
+    },
+    "require-dev": {
+      "kahlan/kahlan": "^6.0",
+      "symfony/var-dumper": "^5.3"
     }
 }

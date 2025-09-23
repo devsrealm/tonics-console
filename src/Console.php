@@ -3,6 +3,7 @@
 namespace Devsrealm\TonicsConsole;
 
 use Devsrealm\TonicsConsole\Interfaces\ConsoleCommand;
+use Devsrealm\TonicsConsole\Helpers\ArgsHelper;
 
 class Console
 {
@@ -21,17 +22,15 @@ class Console
     {
         $registrars = array_values($this->getCommandRegistrar()->getList());
         $commandArgs = $this->getProcessedArgs();
-        $requiredArgs =  array_filter($commandArgs, function ($key, $value) {
-            return str_starts_with($value, "--");
-        }, ARRAY_FILTER_USE_BOTH);
 
         foreach ($registrars as $registrar){
             /**
              * @var $registrar ConsoleCommand
              */
             if ($registrar instanceof ConsoleCommand){
-                // if the commandargs conformed with the $registrar required...
-                if ($registrar->required() === array_keys($requiredArgs)) {
+                $requiredPatterns = $registrar->required();
+                $missing = ArgsHelper::require($commandArgs, $requiredPatterns);
+                if (empty($missing)) {
                     $registrar->run($commandArgs);
                     break;
                 }

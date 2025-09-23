@@ -110,6 +110,100 @@ Verbose Mode: Enabled
 
 This example demonstrates how to parse and access individual command-line arguments, including handling optional flags like `-v`.
 
+## Advanced Features
+
+- Repeated keys (both required `--key` and optional `-k`) are supported. A single occurrence remains a string (backward compatible); multiple occurrences become an array.
+- Wildcard matching for required patterns: commands can declare `--env*` to match any `--env:subcommand` key.
+- ArgsHelper utility provides convenient methods for checking and retrieving arguments.
+
+### Repeated Keys Example
+
+```sh
+php console --env:manage --file=.env.local --set=DB_HOST=localhost --set=DB_USER=root -I=path1 -I=path2 -v
+```
+
+Parsed structure snippet:
+
+```
+Array
+(
+    [--env:manage] =>
+    [--file] => .env.local
+    [--set] => Array
+        (
+            [0] => DB_HOST=localhost
+            [1] => DB_USER=root
+        )
+
+    [-I] => Array
+        (
+            [0] => path1
+            [1] => path2
+        )
+
+    [-v] =>
+)
+```
+
+### Wildcard Required Patterns in Commands
+
+A command can express its requirements with wildcards:
+
+```php
+use Devsrealm\TonicsConsole\Interfaces\ConsoleCommand;
+
+class EnvManageCommand implements ConsoleCommand
+{
+    public function required(): array
+    {
+        // Accepts any --env:* subcommand
+        return ['--env*'];
+    }
+
+    public function run(array $commandOptions): void
+    {
+        // ...
+    }
+}
+```
+
+### ArgsHelper Quick Reference
+
+```php
+use Devsrealm\TonicsConsole\Helpers\ArgsHelper;
+
+// presence checks (wildcard supported)
+ArgsHelper::has($args, '--env*');
+
+// get exact or wildcard map
+$value = ArgsHelper::get($args, '--file', 'default');
+$envMap = ArgsHelper::get($args, '--env*'); // [ '--env:manage' => '', '--env:list' => '', ... ]
+
+// always return array for a key (promote scalar/flag to array)
+$sets = ArgsHelper::getAsArray($args, '--set');
+
+// treat empty-string flags as boolean true
+$verbose = ArgsHelper::valueOrFlag($args, '-v', true, false);
+
+// filter by patterns
+$envArgs = ArgsHelper::filter($args, '--env*');
+
+// validate required patterns (supports wildcards)
+$missing = ArgsHelper::require($args, ['--env*', '--file']);
+```
+
+### Optional Description Interface
+
+For commands that want to expose metadata without affecting behavior, implement:
+
+```php
+use Devsrealm\TonicsConsole\Interfaces\DescribedConsoleCommand;
+```
+
+- `name(): string`
+- `description(): string`
+- `usage(): string`
+
 ## Class Details
 
 ### `ProcessCommandLineArgs`
@@ -137,6 +231,16 @@ public function __construct(array $args)
 - **getProcessArgs(): array**
 
   Returns the processed arguments.
+
+## Testing with Kahlan
+
+Specs are located in the `spec/` directory. Run the test suite with:
+
+```sh
+vendor/bin/kahlan
+```
+
+Kahlan coverage/reporters are not required for this project; the default output is sufficient.
 
 ## License
 
