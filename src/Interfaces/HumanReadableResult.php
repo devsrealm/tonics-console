@@ -4,5 +4,5 @@ namespace Devsrealm\TonicsConsole\Interfaces;
 
 interface HumanReadableResult
 {
-    public function getHumanReadableResult(): array;
+    public function getHumanReadableResult(): mixed;
 }
