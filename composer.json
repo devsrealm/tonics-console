@@ -15,7 +15,8 @@
     "require": {
         "php": ">=8.0",
         "ext-intl": "*",
-        "ext-fileinfo": "*"
+        "ext-fileinfo": "*",
+        "ext-mbstring": "*"
     },
     "require-dev": {
       "kahlan/kahlan": "^6.0",

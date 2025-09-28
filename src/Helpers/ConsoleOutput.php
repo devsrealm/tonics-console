@@ -20,12 +20,10 @@ class ConsoleOutput
 
     public function __construct($out = null, $err = null)
     {
-        $this->out = $out ?? \STDOUT;
-        $this->err = $err ?? \STDERR;
+        $this->out = self::isCLI() ? ($out ?? \STDOUT) : $out;
+        $this->err = self::isCLI() ? ($err ?? \STDERR) : $err;
         self::initShellColors();
     }
-
-    // ===================== Instance Methods =====================
 
     /**
      * @param string $fgColor
@@ -114,12 +112,16 @@ class ConsoleOutput
     // ===================== Plain Writers =====================
     public function line(string $message = ''): void
     {
-        fwrite($this->out, $message . PHP_EOL);
+        if (self::isCLI()) {
+            fwrite($this->out, $message . PHP_EOL);
+        }
     }
 
     public function write(string $message): void
     {
-        fwrite($this->out, $message);
+        if (self::isCLI()) {
+            fwrite($this->out, $message);
+        }
     }
 
     /**
