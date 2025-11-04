@@ -204,6 +204,56 @@ use Devsrealm\TonicsConsole\Interfaces\DescribedConsoleCommand;
 - `description(): string`
 - `usage(): string`
 
+### Command Specificity and Matching
+
+When multiple commands have overlapping requirements, the console automatically matches the **most specific command** first (the one with the most required arguments). This ensures correct behavior when you have commands with subset/superset requirements.
+
+**Example:**
+
+```php
+// Generic command
+class MigrateAll implements ConsoleCommand
+{
+    public function required(): array
+    {
+        return ['--migrate:all'];
+    }
+    
+    public function run(array $commandOptions): void
+    {
+        // Runs basic migration
+    }
+}
+
+// More specific command
+class MigrateAllFresh implements ConsoleCommand
+{
+    public function required(): array
+    {
+        return ['--migrate:all', '--fresh'];
+    }
+    
+    public function run(array $commandOptions): void
+    {
+        // Runs fresh migration
+    }
+}
+```
+
+When you run:
+```sh
+php console --migrate:all --fresh
+```
+
+The system will match `MigrateAllFresh` (2 required args) instead of `MigrateAll` (1 required arg), ensuring the correct command executes regardless of registration order.
+
+When you run:
+```sh
+php console --migrate:all
+```
+
+The system will match `MigrateAll` since `MigrateAllFresh` is missing the `--fresh` requirement.
+
 ## Class Details
 
 ### `ProcessCommandLineArgs`

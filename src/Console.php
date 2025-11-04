@@ -23,19 +23,41 @@ class Console
         $registrars = array_values($this->getCommandRegistrar()->getList());
         $commandArgs = $this->getProcessedArgs();
 
-        foreach ($registrars as $registrar){
-            /**
-             * @var $registrar ConsoleCommand
-             */
-            if ($registrar instanceof ConsoleCommand){
+        // Find all matching commands
+        $matches = [];
+        foreach ($registrars as $registrar) {
+            if ($registrar instanceof ConsoleCommand) {
                 $requiredPatterns = $registrar->required();
                 $missing = ArgsHelper::require($commandArgs, $requiredPatterns);
                 if (empty($missing)) {
-                    $registrar->run($commandArgs);
-                    break;
+                    $matches[] = [
+                        'command' => $registrar,
+                        'required' => $requiredPatterns,
+                        'count' => count($requiredPatterns)
+                    ];
                 }
             }
         }
+
+        if (empty($matches)) {
+            // No matching commands found, silently exit
+            return;
+        }
+
+        // Sort matches by specificity (most required arguments first)
+        // For commands with the same count, we use a deterministic secondary sort
+        // by comparing JSON-encoded requirements to ensure stable sorting behavior
+        usort($matches, function($a, $b) {
+            $countCompare = $b['count'] <=> $a['count'];
+            if ($countCompare !== 0) {
+                return $countCompare;
+            }
+            // Secondary sort: use JSON encoding for deterministic ordering
+            return json_encode($a['required']) <=> json_encode($b['required']);
+        });
+
+        // Run the most specific matching command
+        $matches[0]['command']->run($commandArgs);
     }
 
     /**
